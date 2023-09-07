@@ -1,10 +1,62 @@
-import { Module } from '@nestjs/common'
-import { AppController } from './app.controller'
+import { Logger, Module } from '@nestjs/common'
 import { AppService } from './app.service'
+import { AuthModule } from './auth/auth.module'
+import { ConfigModule, ConfigService } from '@nestjs/config'
+import configuration from './config/configuration'
+import { WorkerPool } from './worker.pool'
+import { UsersModule } from './users/users.module'
+import { ThrottlerModule } from '@nestjs/throttler'
+import { DevtoolsModule } from '@nestjs/devtools-integration'
+import { MongooseModule } from '@nestjs/mongoose'
+import { MigrationsService } from './migrations/migrations.service'
 
 @Module({
-    imports: [],
-    controllers: [AppController],
-    providers: [AppService],
+	imports: [
+		DevtoolsModule.register({
+			http: process.env.NODE_ENV !== 'production',
+		}),
+		ConfigModule.forRoot({
+			load: [configuration],
+			isGlobal: true,
+		}),
+		ThrottlerModule.forRootAsync({
+			imports: [ConfigModule],
+			inject: [ConfigService],
+			useFactory: (config: ConfigService) => ({
+				throttlers: [
+					{
+						name: 'GlobalThrottler',
+						ttl: config.get<number>('throttleTtl'),
+						limit: config.get<number>('throttleLimit'),
+					},
+				],
+			}),
+		}),
+		MongooseModule.forRootAsync({
+			imports: [ConfigModule],
+			inject: [ConfigService],
+			useFactory: (config: ConfigService) => ({
+				uri: `mongodb://${config.get<string>('database.uri')}`,
+				dbName: config.get<string>('database.name'),
+				auth: {
+					password: config.get<string>('database.password'),
+					username: config.get<string>('database.username'),
+				},
+				authSource: config.get<string>('database.name'),
+				authMechanism: 'DEFAULT',
+			}),
+		}),
+		AuthModule,
+		UsersModule,
+	],
+	controllers: [],
+	providers: [AppService, WorkerPool, MigrationsService],
 })
-export class AppModule {}
+export class AppModule {
+	private readonly logger = new Logger(AppModule.name)
+	constructor(private migrationService: MigrationsService) {}
+
+	async onModuleInit() {
+		await this.migrationService.runMigrationsUp()
+	}
+}

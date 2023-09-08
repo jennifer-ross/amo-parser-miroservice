@@ -9,12 +9,14 @@ import { ThrottlerModule } from '@nestjs/throttler'
 import { DevtoolsModule } from '@nestjs/devtools-integration'
 import { MongooseModule } from '@nestjs/mongoose'
 import { MigrationsService } from './migrations/migrations.service'
+import { PuppeteerService } from './puppeteer/puppeteer.service'
+import { LeadsModule } from './leads/leads.module'
 
 @Module({
 	imports: [
-		DevtoolsModule.register({
-			http: process.env.NODE_ENV !== 'production',
-		}),
+		// DevtoolsModule.register({
+		// 	http: process.env.NODE_ENV !== 'production',
+		// }),
 		ConfigModule.forRoot({
 			load: [configuration],
 			isGlobal: true,
@@ -48,9 +50,10 @@ import { MigrationsService } from './migrations/migrations.service'
 		}),
 		AuthModule,
 		UsersModule,
+		LeadsModule,
 	],
 	controllers: [],
-	providers: [AppService, WorkerPool, MigrationsService],
+	providers: [AppService, WorkerPool, MigrationsService, PuppeteerService],
 })
 export class AppModule {
 	private readonly logger = new Logger(AppModule.name)

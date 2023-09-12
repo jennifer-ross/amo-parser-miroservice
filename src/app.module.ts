@@ -11,6 +11,7 @@ import { MongooseModule } from '@nestjs/mongoose'
 import { MigrationsService } from './migrations/migrations.service'
 import { PuppeteerService } from './puppeteer/puppeteer.service'
 import { LeadsModule } from './leads/leads.module'
+import { MessageModule } from './message/message.module';
 
 @Module({
 	imports: [
@@ -51,6 +52,7 @@ import { LeadsModule } from './leads/leads.module'
 		AuthModule,
 		UsersModule,
 		LeadsModule,
+		MessageModule,
 	],
 	controllers: [],
 	providers: [AppService, WorkerPool, MigrationsService, PuppeteerService],

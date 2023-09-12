@@ -1,12 +1,14 @@
-import { Controller, Get, Param } from '@nestjs/common'
-import { PuppeteerService } from '../puppeteer/puppeteer.service'
+import { Controller, Get, Param, UseGuards } from '@nestjs/common'
+import { JwtAuthGuard } from '../auth/jwtAuth.guard'
+import { LeadsService } from './leads.service'
 
 @Controller('leads')
 export class LeadsController {
-	constructor(private readonly puppeteerService: PuppeteerService) {}
+	constructor(private readonly leadsService: LeadsService) {}
 
+	@UseGuards(JwtAuthGuard)
 	@Get(':leadId')
 	async getLead(@Param('leadId') leadId: string) {
-		await this.puppeteerService.getLead(leadId)
+		return await this.leadsService.getLead(leadId)
 	}
 }

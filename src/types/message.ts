@@ -64,6 +64,8 @@ export interface IAmoSystem {
 	contact?: IAmoSystemContact
 }
 
+export type SendMessageType = 'chat' | 'email' | 'note'
+
 export interface IAmoMessage {
 	author: IAmoUser
 	date: string

@@ -58,6 +58,47 @@ $ npm run test:e2e
 $ npm run test:cov
 ```
 
+## Types
+
+```typescript
+// Type for send message endpoint
+type SendMessageType = 'chat' | 'email' | 'note'
+```
+
+## Endpoints
+
+```bash
+# Parse all messages
+Need pass your access token
+Method GET - '/leads/:leadId'
+
+# Parse sources for send messages
+Need pass your access token
+Method GET - '/leads/sources/:leadId' 
+
+# Parse sources for send messages
+# Need pass your access token
+Method POST - '/message/send/' 
+RequestData: {
+	leadId: string
+	message: string
+	messageType: 'chat' | 'email' | 'note'
+	chatId?: string
+}
+
+# Update your access and refresh tokens
+# Need pass your current refresh token
+Method POST - '/auth/refresh' 
+
+# Update your access and refresh tokens
+Method POST - '/auth' 
+RequestData: {
+	login: string
+	password: string
+}
+```
+
+
 ## Support
 
 Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).

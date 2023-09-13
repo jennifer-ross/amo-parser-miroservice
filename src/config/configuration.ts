@@ -14,6 +14,7 @@ export default () => ({
 			toLower(process.env.LOGS) === 'true') ||
 		true,
 	host: process.env.HOST || '127.0.0.1',
+	sendEndpoint: process.env.SEND_ENDPOINT || '',
 	compressionEncodings: ['gzip', 'deflate'] as EncodingToken[],
 	saltRounds: parseInt(process.env.SALT_ROUNDS, 10) || 10,
 	jwt: {
@@ -51,7 +52,6 @@ export default () => ({
 	},
 	throttleTtl: parseInt(process.env.THROTTLE_TTL, 10) || 60,
 	throttleLimit: parseInt(process.env.THROTTLE_LIMIT, 10) || 10,
-
 	captcha: {
 		id: process.env.CAPTCHA_ID || '2captcha',
 		token: process.env.CAPTCHA_TOKEN || 'ENTER_YOUR_2CAPTCHA_API_KEY_HERE',
@@ -61,20 +61,38 @@ export default () => ({
 			(isBoolean(toLower(process.env.AMO_SAVE_SESSION)) &&
 				toLower(process.env.AMO_SAVE_SESSION) === 'true') ||
 			true,
-		login: process.env.AMO_LOGIN || 'pguczol23@yandex.ru',
-		password: process.env.AMO_PASSWORD || 'AStQs2lV',
-		crm: process.env.CRM_NAME || 'pguczol23',
+		login: process.env.AMO_LOGIN || '',
+		password: process.env.AMO_PASSWORD || '',
+		crm: process.env.CRM_NAME || '',
 	},
 	parser: {
 		launch: {
-			headless: false,
+			headless: 'new',
 			ignoreHTTPSErrors: true,
+			handleNodeExit: [0, 1, 2], // chrome exits when process.exit(0) or process.exit(2)
+			handleSIGINT: true,
+			handleSIGTERM: true,
+			handleSIGHUP: true,
 			args: [
 				`--window-size=1200,800`,
 				'--disable-features=IsolateOrigins,site-per-process,SitePerProcess,AutomationControlled',
 				'--flag-switches-begin --disable-site-isolation-trials --flag-switches-end',
 				'--disable-features=site-per-process',
 				'--disable-web-security',
+				'--disable-gpu',
+				'--disable-dev-shm-usage',
+				'--disable-setuid-sandbox',
+				'--no-first-run',
+				'--no-sandbox',
+				'--no-zygote',
+				'--deterministic-fetch',
+				'--disable-features=IsolateOrigins',
+				'--disable-site-isolation-trials',
+				'--no-zygote',
+				'--unlimited-storage',
+				'--full-memory-crash-report',
+				'--force-gpu-mem-available-mb',
+				'--disable-infobars',
 			],
 		} as Parameters<VanillaPuppeteer['launch']>[0],
 		protocol: 'https',
@@ -85,6 +103,15 @@ export default () => ({
 			captcha: '#recaptcha',
 			leadCreated: '.feed-note-wrapper-lead_created',
 			scrollElement: '.notes-wrapper__scroller',
+			feedSourceSwitcher: '.feed-compose-switcher__tip .tips-item',
+			chatTargetSource: '.feed-compose-user__name.js-multisuggest-item',
+			chatSourceItem: '.multisuggest__suggest-item.js-multisuggest-item',
+			feedSourceSwitcherItem: '.feed-compose-switcher__tip .tips-item',
+			feedSwitcher: '.feed-compose-switcher',
+			feedSendField: '.feed-compose .feed-compose__inner .js-note',
+			feedFieldMessage: '.feed-compose__message',
+			feedSendBtn:
+				'.feed-amojo__actions-inner .js-note-submit, .feed-note__actions .js-note-submit',
 			feed: '.feed-note-wrapper:not(.feed-note-wrapper_grouped,.feed-note-wrapper-opened_talks)',
 			feedConcatLinked: '.card-task__linked, .feed-note__linked',
 			feedSms: 'feed-note-wrapper-sms',

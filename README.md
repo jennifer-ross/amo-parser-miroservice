@@ -90,7 +90,7 @@ RequestData: {
 # Need pass your current refresh token
 Method POST - '/auth/refresh' 
 
-# Update your access and refresh tokens
+# Auth and get get access and refresh tokens
 Method POST - '/auth' 
 RequestData: {
 	login: string

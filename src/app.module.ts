@@ -11,7 +11,10 @@ import { MongooseModule } from '@nestjs/mongoose'
 import { MigrationsService } from './migrations/migrations.service'
 import { PuppeteerService } from './puppeteer/puppeteer.service'
 import { LeadsModule } from './leads/leads.module'
-import { MessageModule } from './message/message.module';
+import { MessageModule } from './message/message.module'
+import { QueueService } from './queue/queue.service'
+import { HttpModule, HttpService } from '@nestjs/axios'
+import { AppClusterService } from './app-cluster/app-cluster.service';
 
 @Module({
 	imports: [
@@ -21,6 +24,8 @@ import { MessageModule } from './message/message.module';
 		ConfigModule.forRoot({
 			load: [configuration],
 			isGlobal: true,
+			envFilePath: '.env',
+			ignoreEnvFile: false,
 		}),
 		ThrottlerModule.forRootAsync({
 			imports: [ConfigModule],
@@ -53,9 +58,17 @@ import { MessageModule } from './message/message.module';
 		UsersModule,
 		LeadsModule,
 		MessageModule,
+		HttpModule,
 	],
 	controllers: [],
-	providers: [AppService, WorkerPool, MigrationsService, PuppeteerService],
+	providers: [
+		AppService,
+		WorkerPool,
+		MigrationsService,
+		PuppeteerService,
+		QueueService,
+		AppClusterService,
+	],
 })
 export class AppModule {
 	private readonly logger = new Logger(AppModule.name)

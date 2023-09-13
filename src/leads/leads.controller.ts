@@ -11,4 +11,10 @@ export class LeadsController {
 	async getLead(@Param('leadId') leadId: string) {
 		return await this.leadsService.getLead(leadId)
 	}
+
+	@UseGuards(JwtAuthGuard)
+	@Get('/sources/:leadId')
+	async getLeadSources(@Param('leadId') leadId: string) {
+		return await this.leadsService.getLeadSources(leadId)
+	}
 }

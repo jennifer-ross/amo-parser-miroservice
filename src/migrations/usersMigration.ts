@@ -2,6 +2,7 @@ import { MigrationInterface } from 'mongo-migrate-ts'
 import { Db, MongoClient } from 'mongodb'
 import { User } from '../models/user.schema'
 import { hashPassword } from '../workers/password'
+import configuration from '../config/configuration'
 
 export class UsersMigration implements MigrationInterface {
 	async up(db: Db, client: MongoClient): Promise<any> {
@@ -20,8 +21,10 @@ export class UsersMigration implements MigrationInterface {
 
 				if ((await users.toArray()).length === 0) {
 					await db.collection<User>(User.name).insertOne({
-						login: 'admin',
-						password: await hashPassword('admin'),
+						login: configuration().defaultUser,
+						password: await hashPassword(
+							configuration().defaultPassword,
+						),
 						createdAt: new Date(),
 						updatedAt: new Date(),
 						refreshToken: '',

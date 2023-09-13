@@ -17,6 +17,8 @@ export default () => ({
 	sendEndpoint: process.env.SEND_ENDPOINT || '',
 	compressionEncodings: ['gzip', 'deflate'] as EncodingToken[],
 	saltRounds: parseInt(process.env.SALT_ROUNDS, 10) || 10,
+	defaultUser: process.env.DEFAULT_USER_LOGIN || 'admin',
+	defaultPassword: process.env.DEFAULT_USER_PASSWORD || 'admin',
 	jwt: {
 		algorithm: 'RS256' as Algorithm,
 		issuer: process.env.JWT_ISSUER || '127.0.0.1',

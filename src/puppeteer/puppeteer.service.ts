@@ -1551,12 +1551,6 @@ export class PuppeteerService {
 	}
 
 	private async sendResult(data: any): Promise<void> {
-		fs.writeFileSync(
-			path.join(process.cwd(), 'src/puppeteer/task.json'),
-			JSON.stringify(data),
-			'utf-8',
-		)
-
 		if (!isEmpty(this.configService.get<string>('sendEndpoint'))) {
 			this.httpService.post(
 				this.configService.get<string>('sendEndpoint'),

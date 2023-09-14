@@ -12,7 +12,7 @@ import * as process from 'process'
 import { AppClusterService } from './app-cluster/app-cluster.service'
 
 dotenv.config({
-	path: path.join(process.cwd(), 'src/.env'),
+	path: path.join(process.cwd(), '.env'),
 })
 
 async function bootstrap() {

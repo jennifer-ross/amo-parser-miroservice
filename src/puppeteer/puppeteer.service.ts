@@ -1684,7 +1684,7 @@ export class PuppeteerService {
 
 				await this.frame.page().goto(url, {
 					waitUntil: 'networkidle0',
-					timeout: 60000,
+					timeout: this.timeout,
 				})
 
 				await sleep(3000)
@@ -1692,7 +1692,7 @@ export class PuppeteerService {
 				if (this.isAuth) {
 					await this.frame.waitForNavigation({
 						waitUntil: 'networkidle0',
-						timeout: 60000,
+						timeout: this.timeout,
 					})
 				}
 

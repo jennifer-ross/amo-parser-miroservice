@@ -6,15 +6,14 @@ import configuration from './config/configuration'
 import { WorkerPool } from './worker.pool'
 import { UsersModule } from './users/users.module'
 import { ThrottlerModule } from '@nestjs/throttler'
-import { DevtoolsModule } from '@nestjs/devtools-integration'
 import { MongooseModule } from '@nestjs/mongoose'
 import { MigrationsService } from './migrations/migrations.service'
 import { PuppeteerService } from './puppeteer/puppeteer.service'
 import { LeadsModule } from './leads/leads.module'
 import { MessageModule } from './message/message.module'
 import { QueueService } from './queue/queue.service'
-import { HttpModule, HttpService } from '@nestjs/axios'
-import { AppClusterService } from './app-cluster/app-cluster.service';
+import { HttpModule } from '@nestjs/axios'
+import { AppClusterService } from './app-cluster/app-cluster.service'
 
 @Module({
 	imports: [

@@ -17,6 +17,7 @@ import { Cluster } from 'puppeteer-cluster'
 import { IAmoLeadResponse } from '../types/response'
 import { PuppeteerExtra } from 'puppeteer-extra'
 import { HttpService } from '@nestjs/axios'
+import axios from 'axios'
 
 @Injectable()
 export class PuppeteerService {
@@ -24,6 +25,7 @@ export class PuppeteerService {
 
 	private frame: Frame = null
 	private isAuth: boolean = false
+	private readonly timeout = 3600000
 
 	private cookiePath: string = path.join(process.cwd(), 'cookies.json')
 	private amoUsersIds: IAmoUsersList = {
@@ -136,11 +138,14 @@ export class PuppeteerService {
 
 			let cookies = await this.frame.page().cookies()
 
+			this.logger.log('Authorise get cookies...')
+
 			cookies.forEach((item) => {
 				finalCookie[item.name] = item
 			})
 
 			if (this.configService.get('amo.saveSession')) {
+				this.logger.log('Authorise save cookies...')
 				await this.saveCookies(finalCookie)
 			}
 		})
@@ -194,6 +199,7 @@ export class PuppeteerService {
 			await authField.type(`${this.configService.get('amo.login')}`, {
 				delay: 120,
 			})
+			this.logger.log('Authorise click and type authField...')
 			// Click for select any saved text and remove when typing
 			await passwordField.click({ count: 3 })
 			await passwordField.type(
@@ -202,8 +208,9 @@ export class PuppeteerService {
 					delay: 120,
 				},
 			)
+			this.logger.log('Authorise click and type passwordField...')
 			await authSubmitBtn.click({ delay: 30 })
-
+			this.logger.log('Authorise click authSubmitBtn...')
 			return true
 
 			// await page.waitForSelector('body')
@@ -260,7 +267,7 @@ export class PuppeteerService {
 	private async applyDefaultActions(page: Page): Promise<void> {
 		this.logger.log('Start do default actions...')
 		this.frame = page.mainFrame()
-		await this.frame.page().setDefaultNavigationTimeout(60000)
+		await this.frame.page().setDefaultNavigationTimeout(this.timeout)
 		await this.setCookiesToPage()
 		await this.onLoad()
 		await this.onRequest()
@@ -1552,10 +1559,13 @@ export class PuppeteerService {
 
 	private async sendResult(data: any): Promise<void> {
 		if (!isEmpty(this.configService.get<string>('sendEndpoint'))) {
-			this.httpService.post(
+			this.logger.log('Sending results...')
+			const response = await axios.post(
 				this.configService.get<string>('sendEndpoint'),
 				data,
 			)
+
+			this.logger.log(`Get response: ${JSON.stringify(response.data)}`)
 		}
 	}
 
@@ -1568,6 +1578,7 @@ export class PuppeteerService {
 				puppeteerOptions: this.configService.get('parser.launch'),
 				retryLimit: 3,
 				retryDelay: 5,
+				timeout: this.timeout,
 			})
 
 			const url = `${this.configService.get<string>(
@@ -1583,7 +1594,7 @@ export class PuppeteerService {
 
 				await this.frame.page().goto(url, {
 					waitUntil: 'networkidle0',
-					timeout: 60000,
+					timeout: this.timeout,
 				})
 
 				await sleep(3000)
@@ -1591,7 +1602,7 @@ export class PuppeteerService {
 				if (this.isAuth) {
 					await this.frame.waitForNavigation({
 						waitUntil: 'networkidle0',
-						timeout: 60000,
+						timeout: this.timeout,
 					})
 				}
 
@@ -1657,7 +1668,7 @@ export class PuppeteerService {
 				puppeteerOptions: this.configService.get('parser.launch'),
 				retryLimit: 3,
 				retryDelay: 5,
-				timeout: 180000,
+				timeout: this.timeout,
 			})
 
 			const url = `${this.configService.get<string>(
@@ -1763,6 +1774,7 @@ export class PuppeteerService {
 				puppeteerOptions: this.configService.get('parser.launch'),
 				retryLimit: 3,
 				retryDelay: 5,
+				timeout: this.timeout,
 			})
 
 			const url = `${this.configService.get<string>(
@@ -1782,7 +1794,7 @@ export class PuppeteerService {
 
 					await this.frame.page().goto(url, {
 						waitUntil: 'networkidle0',
-						timeout: 60000,
+						timeout: this.timeout,
 					})
 
 					await sleep(3000)
@@ -1790,7 +1802,7 @@ export class PuppeteerService {
 					if (this.isAuth) {
 						await this.frame.waitForNavigation({
 							waitUntil: 'networkidle0',
-							timeout: 60000,
+							timeout: this.timeout,
 						})
 					}
 

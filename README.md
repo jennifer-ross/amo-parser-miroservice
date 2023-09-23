@@ -84,6 +84,7 @@ RequestData: {
 	message: string
 	messageType: 'chat' | 'email' | 'note'
 	chatId?: string
+	messageTheme?: string
 }
 
 # Update your access and refresh tokens

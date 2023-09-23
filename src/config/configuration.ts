@@ -110,9 +110,14 @@ export default () => ({
 			feedSourceSwitcherItem: '.feed-compose-switcher__tip .tips-item',
 			feedSwitcher: '.feed-compose-switcher',
 			feedSendField: '.feed-compose .feed-compose__inner .js-note',
+			feedSendField2:
+				'.feed-compose .feed-compose__inner .js-note .ql-editor',
 			feedFieldMessage: '.feed-compose__message',
+			feedFieldMessage2: '.feed-compose__message .ql-editor',
+			feedMailSubject:
+				'.js-compose-mail-subject_field-container .text-input.feed-compose_mail__input',
 			feedSendBtn:
-				'.feed-amojo__actions-inner .js-note-submit, .feed-note__actions .js-note-submit',
+				'.feed-amojo__actions-inner .js-note-submit, .feed-note__actions .js-note-submit, .feed-compose__actions-inner .js-note-submit',
 			feed: '.feed-note-wrapper:not(.feed-note-wrapper_grouped,.feed-note-wrapper-opened_talks)',
 			feedConcatLinked: '.card-task__linked, .feed-note__linked',
 			feedSms: 'feed-note-wrapper-sms',

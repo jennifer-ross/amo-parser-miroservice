@@ -5,4 +5,5 @@ export class MessageSendDto {
 	message: string
 	messageType: SendMessageType
 	chatId?: string
+	messageTheme?: string
 }

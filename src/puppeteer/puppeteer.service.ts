@@ -283,6 +283,9 @@ export class PuppeteerService {
 				this.configService.get<string>(
 					'parser.selectors.feedsContainer',
 				),
+				{
+					timeout: this.timeout,
+				},
 			)
 
 		const constant = await this.frame.page().evaluate((regex: RegExp) => {
@@ -1321,6 +1324,7 @@ export class PuppeteerService {
 		message: string,
 		messageType: SendMessageType,
 		chatId?: string,
+		messageTheme?: string,
 	): Promise<boolean> {
 		this.logger.log('Sending message to lead...')
 
@@ -1377,11 +1381,14 @@ export class PuppeteerService {
 
 			if (chatTargetSource) {
 				await chatTargetSource.click()
-				await sleep(5000)
+				await sleep(10000)
 				await this.frame
 					.page()
 					.waitForSelector(
 						'.users-select-suggest .users-select-row__inner',
+						{
+							timeout: this.timeout,
+						},
 					)
 				await this.frame
 					.page()
@@ -1389,6 +1396,9 @@ export class PuppeteerService {
 						`${this.configService.get<string>(
 							'parser.selectors.chatSourceItem',
 						)}[data-id="${chatId}"]`,
+						{
+							timeout: this.timeout,
+						},
 					)
 
 				const chatContactSource = await this.frame
@@ -1403,6 +1413,21 @@ export class PuppeteerService {
 
 				await chatContactSource.click()
 				await sleep(2000)
+			}
+		}
+
+		if (messageType === 'email' && messageTheme) {
+			const themeField = await this.frame
+				.page()
+				.$(
+					`${this.configService.get<string>(
+						'parser.selectors.feedMailSubject',
+					)}`,
+				)
+
+			if (themeField) {
+				await themeField.click({ count: 3 })
+				await themeField.type(messageTheme, { delay: 120 })
 			}
 		}
 
@@ -1424,6 +1449,13 @@ export class PuppeteerService {
 						'parser.selectors.feedFieldMessage',
 					)}`,
 				)
+			const feedFieldMessage2 = await this.frame
+				.page()
+				.$(
+					`${this.configService.get<string>(
+						'parser.selectors.feedFieldMessage2',
+					)}`,
+				)
 			const sendMessageBtn = await this.frame
 				.page()
 				.$(
@@ -1432,9 +1464,14 @@ export class PuppeteerService {
 					)}`,
 				)
 
-			if (fieldMessage && sendMessageBtn) {
-				await fieldMessage.click({ count: 3 })
-				await fieldMessage.type(message, { delay: 10 })
+			const finalField = feedFieldMessage2
+				? feedFieldMessage2
+				: fieldMessage
+
+			if (finalField && sendMessageBtn) {
+				await finalField.click({ count: 3 })
+				await finalField.type(message, { delay: 10 })
+				await sleep(3000)
 				await sendMessageBtn.click()
 				await sleep(5000)
 
@@ -1502,11 +1539,14 @@ export class PuppeteerService {
 
 			if (chatTargetSource) {
 				await chatTargetSource.click()
-				await sleep(5000)
+				await sleep(10000)
 				await this.frame
 					.page()
 					.waitForSelector(
 						'.users-select-suggest .users-select-row__inner',
+						{
+							timeout: this.timeout,
+						},
 					)
 				chatSources = await this.frame
 					.page()
@@ -1515,7 +1555,12 @@ export class PuppeteerService {
 							'parser.selectors.chatSourceItem',
 						)}[data-group="external"]`,
 						(elements) =>
-							elements.map((el) => el.getAttribute('data-id')),
+							elements.map((el) => {
+								return {
+									id: el.getAttribute('data-id'),
+									name: el.textContent,
+								}
+							}),
 					)
 			}
 		}
@@ -1569,7 +1614,7 @@ export class PuppeteerService {
 		}
 	}
 
-	async getLeadSources(leadId: string) {
+	async getLeadSources(leadId: string, taskId: string) {
 		try {
 			const cluster = await Cluster.launch({
 				concurrency: Cluster.CONCURRENCY_CONTEXT,
@@ -1612,6 +1657,9 @@ export class PuppeteerService {
 						this.configService.get<string>(
 							'parser.selectors.feedsContainer',
 						),
+						{
+							timeout: this.timeout,
+						},
 					)
 
 				this.amoUsersIds = await this.parseAmoChatConstantUserIds()
@@ -1629,6 +1677,7 @@ export class PuppeteerService {
 					this.logger.error(error)
 					await this.sendResult({
 						leadId,
+						taskId,
 						task: 'getLeadSources',
 						error,
 					})
@@ -1644,6 +1693,7 @@ export class PuppeteerService {
 
 			await this.sendResult({
 				leadId,
+				taskId,
 				task: 'getLeadSources',
 				result,
 			})
@@ -1652,6 +1702,7 @@ export class PuppeteerService {
 		} catch (e) {
 			await this.sendResult({
 				leadId,
+				taskId,
 				task: 'getLeadSources',
 				error: (e as Error).message,
 			})
@@ -1659,7 +1710,7 @@ export class PuppeteerService {
 		}
 	}
 
-	async getLead(leadId: string): Promise<IAmoLeadResponse> {
+	async getLead(leadId: string, taskId: string): Promise<IAmoLeadResponse> {
 		try {
 			const cluster = await Cluster.launch({
 				concurrency: Cluster.CONCURRENCY_CONTEXT,
@@ -1702,6 +1753,9 @@ export class PuppeteerService {
 						this.configService.get<string>(
 							'parser.selectors.feedsContainer',
 						),
+						{
+							timeout: this.timeout,
+						},
 					)
 				await this.scrollToStartLead()
 				this.amoUsersIds = await this.parseAmoChatConstantUserIds()
@@ -1733,6 +1787,7 @@ export class PuppeteerService {
 					// throw new Error(error)
 					await this.sendResult({
 						leadId,
+						taskId,
 						task: 'getLead',
 						error,
 					})
@@ -1746,6 +1801,7 @@ export class PuppeteerService {
 
 			await this.sendResult({
 				leadId,
+				taskId,
 				task: 'getLead',
 				result,
 			})
@@ -1754,6 +1810,7 @@ export class PuppeteerService {
 		} catch (e) {
 			await this.sendResult({
 				leadId,
+				taskId,
 				task: 'getLead',
 				error: (e as Error).message,
 			})
@@ -1764,7 +1821,9 @@ export class PuppeteerService {
 		leadId: string,
 		message: string,
 		messageType: SendMessageType,
+		taskId: string,
 		chatId?: string,
+		messageTheme?: string,
 	): Promise<IAmoLeadResponse> {
 		try {
 			const cluster = await Cluster.launch({
@@ -1788,7 +1847,7 @@ export class PuppeteerService {
 			await cluster.task(
 				async ({
 					page,
-					data: { url, message, messageType, chatId },
+					data: { url, message, messageType, chatId, messageTheme },
 				}) => {
 					await this.applyDefaultActions(page)
 
@@ -1812,6 +1871,9 @@ export class PuppeteerService {
 							this.configService.get<string>(
 								'parser.selectors.feedsContainer',
 							),
+							{
+								timeout: this.timeout,
+							},
 						)
 					this.amoUsersIds = await this.parseAmoChatConstantUserIds()
 					await this.expandFeeds()
@@ -1820,6 +1882,7 @@ export class PuppeteerService {
 						message,
 						messageType,
 						chatId,
+						messageTheme,
 					)
 
 					if (!sendMessageResult) {
@@ -1827,6 +1890,18 @@ export class PuppeteerService {
 							ids: this.amoUsersIds,
 							messages: [],
 						} as IAmoLeadResponse
+					}
+
+					await this.frame.page().reload({
+						waitUntil: 'networkidle0',
+						timeout: this.timeout,
+					})
+
+					if (this.isAuth) {
+						await this.frame.waitForNavigation({
+							waitUntil: 'networkidle0',
+							timeout: this.timeout,
+						})
 					}
 
 					const messageList = await this.parseMessages(true)
@@ -1848,6 +1923,7 @@ export class PuppeteerService {
 					this.logger.error(error)
 					await this.sendResult({
 						leadId,
+						taskId,
 						task: 'sendMessage',
 						error,
 					})
@@ -1859,6 +1935,7 @@ export class PuppeteerService {
 				message,
 				messageType,
 				chatId,
+				messageTheme,
 			})) as IAmoLeadResponse
 
 			await cluster.idle()
@@ -1868,6 +1945,7 @@ export class PuppeteerService {
 				leadId,
 				messageType,
 				chatId,
+				taskId,
 				task: 'sendMessage',
 				result,
 			})
@@ -1876,6 +1954,7 @@ export class PuppeteerService {
 		} catch (e) {
 			await this.sendResult({
 				leadId,
+				taskId,
 				task: 'sendMessage',
 				error: (e as Error).message,
 			})

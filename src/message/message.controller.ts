@@ -15,6 +15,7 @@ export class MessageController {
 			messageSendDto.message,
 			messageSendDto.messageType,
 			messageSendDto.chatId,
+			messageSendDto.messageTheme,
 		)
 	}
 }
